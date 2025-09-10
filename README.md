@@ -38,7 +38,10 @@ sudo systemctl enable --now ollama
 which ollama
 ollama --version
 
-ollama serve #do it from a different terminal
+#do it from a different terminal the below step
+ollama serve
+
+#do it from the root file
 ollama pull qwen2.5:3b-instruct
 curl -s http://localhost:11434/v1/models | head
 ```
@@ -69,17 +72,34 @@ LIVEKIT_URL=wss://your-project.livekit.cloud
 LIVEKIT_API_KEY=your_livekit_api_key
 LIVEKIT_API_SECRET=your_livekit_api_secret
 
-OPENAI_API_KEY=sk-your-openai-key
+# LLM -> local OpenAI-compatible
+# A) Ollama:
+OPENAI_BASE_URL=http://localhost:11435/v1
+OPENAI_API_KEY=ollama
+OPENAI_TIMEOUT=60
+PT_LLM_MODEL=qwen2.5:3b-instruct
+# (or) B) LM Studio:
+# OPENAI_BASE_URL=http://localhost:1234/v1
+# PT_LLM_MODEL=<model name shown in LM Studio>
+
+# STT -> Groq (free to start)
+GROQ_API_KEY=froq_api_key
+
+# Piper voice files (absolute path recommended)
+PIPER_MODEL_PATH=./en_US-amy-medium.onnx
+PIPER_SAMPLE_RATE=22050
 
 # Optional personalization
-BEY_AVATAR_ID=your_avatar_id
-PT_USER_NAME=YourName
-PT_USER_CONTEXT=Short profile or interests
-PT_INTEREST_AREAS=comma,separated,topics
+PT_USER_NAME=Vysakh Ramakrishnan
+PT_USER_CONTEXT=smart guy who is a software developer, loves travel and hiking.
+PT_INTEREST_AREAS=voice ai,context engineering,multimodal
 PT_RECENCY_DAYS=30
-PT_DISALLOWED_TOPICS=comma,separated,disallowed
-PT_LLM_MODEL=gpt-4o-mini
-PT_TTS_VOICE=alloy
+PT_DISALLOWED_TOPICS=basic AI,generic tutorials
+
+# Beyond Presence (usage may incur cost)
+BEY_AVATAR_ID=your_avatar_id
+BEY_API_KEY=your_key
+
 ```
 
 Notes:
