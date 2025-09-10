@@ -1,20 +1,39 @@
-# Web LiveKit + BeyondPresence Avatar
+# 🌐 Web LiveKit + BeyondPresence Avatar
 
-Run a Next.js viewer that streams a BeyondPresence avatar published by a Python LiveKit agent.
+[![Node.js](https://img.shields.io/badge/Node.js-18%2B-green)](https://nodejs.org/)
+[![Python](https://img.shields.io/badge/Python-3.10%2B-blue)](https://www.python.org/)
+[![LiveKit](https://img.shields.io/badge/LiveKit-Cloud-orange)](https://livekit.io/cloud)
+[![License](https://img.shields.io/badge/license-MIT-lightgrey.svg)](LICENSE)
 
-## Prerequisites
+Run a **Next.js web viewer** that streams a **BeyondPresence avatar** published by a **Python LiveKit agent**.  
+This project integrates **LiveKit Cloud**, **BeyondPresence**, and **OpenAI** to deliver real-time, interactive avatars.
 
-- Node.js 18+
-- Python 3.10+
-- LiveKit Cloud project (URL, API Key, API Secret)
-- BeyondPresence API key
-- OpenAI API key
+---
 
-## 1) Install dependencies
+## ✨ Features
+- 🧑‍💻 Next.js frontend for avatar playback  
+- 🐍 Python agent publishes media to LiveKit  
+- 🔑 Server-side JWT token generation (no static client tokens)  
+- 🤖 BeyondPresence + OpenAI integration  
+- 🚀 Fast local dev with `pnpm` + optional `uv` for Python
+
+---
+
+## ⚡ Prerequisites
+You’ll need:
+- [Node.js](https://nodejs.org/) **v18+**
+- [Python](https://www.python.org/) **3.10+**
+- A [LiveKit Cloud](https://livekit.io/cloud) project (URL, API Key, API Secret)
+- A **BeyondPresence API key**
+- An **OpenAI API key**
+
+---
+
+## 📦 Step 1 — Install dependencies
+From the project root:
 
 ```bash
-# From project root
-pnpm install  # or: npm install
+pnpm install   # or: npm install
 ```
 
 ## 2) Configure environment
@@ -92,4 +111,18 @@ Open `http://localhost:3000` and you should see the avatar stream. The app will 
 
 
 =======
-# web-livekit_kontext
+## Structure of the codebase
+.
+├─ python-agent/
+│  ├─ run-uv.sh
+│  ├─ run.sh
+│  └─ .env
+├─ app/ or pages/           # Next.js routes
+├─ src/                     # Web app source
+├─ .env.local               # Web env (private+public)
+├─ package.json
+└─ README.md
+
+## Note
+
+Add env files to .gitignore:
