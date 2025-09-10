@@ -3,7 +3,6 @@
 [![Node.js](https://img.shields.io/badge/Node.js-18%2B-green)](https://nodejs.org/)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue)](https://www.python.org/)
 [![LiveKit](https://img.shields.io/badge/LiveKit-Cloud-orange)](https://livekit.io/cloud)
-[![License](https://img.shields.io/badge/license-MIT-lightgrey.svg)](LICENSE)
 
 Run a **Next.js web viewer** that streams a **BeyondPresence avatar** published by a **Python LiveKit agent**.  
 This project integrates **LiveKit Cloud**, **BeyondPresence**, and **OpenAI** to deliver real-time, interactive avatars.
