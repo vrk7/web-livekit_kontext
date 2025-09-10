@@ -1,6 +1,8 @@
 import logging
 import os
+import asyncio
 from datetime import datetime, timezone
+from typing import AsyncIterable
 
 from dotenv import load_dotenv
 
@@ -10,10 +12,13 @@ from livekit.agents import (
     JobContext,
     WorkerOptions,
     WorkerType,
+    ModelSettings,
     cli,
 )
-from livekit.plugins import openai, silero
+from livekit.agents.voice import Agent, AgentSession
+from livekit.plugins import openai, silero, groq
 from livekit.plugins import bey
+from openai import AsyncOpenAI as OpenAIClient  # ✅ use ASYNC client
 
 load_dotenv()
 
@@ -33,39 +38,25 @@ async def entrypoint(ctx: JobContext):
     await ctx.connect(auto_subscribe=AutoSubscribe.AUDIO_ONLY)
     logger.info(f"Agent connected to room: {ctx.room.name}")
 
-    # --- Config / placeholders (swap these with your real context later) ---
-    # Required/handy identifiers
+    # --- Config / personalization (env-driven) ---
     USER_NAME = _get_env("PT_USER_NAME", "Jens")
-
-    # A short, high-signal description of the user's interests & level.
-    # Replace this with your real personalization source (Kontext, etc.).
     USER_CONTEXT = _get_env(
         "PT_USER_CONTEXT",
         "CDTM Hackathon participant; exploring voice AI applications, context engineering, multimodal interfaces; building next-gen consumer AI apps; interested in practical implementations and user experience innovations.",
     )
-
-    # Optional: hint the broad domain(s) to bias topic selection
     INTEREST_AREAS = _get_env(
         "PT_INTEREST_AREAS",
         "voice AI interfaces, context engineering, multimodal LLMs, consumer AI applications, conversational AI design, real-time voice processing, AI agent architectures, LiveKit platform capabilities",
     )
-
-    # Recency window for "things you likely don't know yet" (the model will *try* to honor this)
     RECENCY_DAYS = _get_env("PT_RECENCY_DAYS", "30")
-
-    # Optional constraints
     DISALLOWED_TOPICS = _get_env(
         "PT_DISALLOWED_TOPICS",
         "basic AI concepts; generic chatbot tutorials; unrelated enterprise solutions",
     )
 
-    # Avatar
     avatar_id = _get_env("BEY_AVATAR_ID", "7c9ca52f-d4f7-46e1-a4b8-0c8655857cc3")
 
-    # --- Voice/LLM pipeline ---
-    from livekit.agents.voice import Agent, AgentSession
-
-    # System prompt: Personalized Teacher
+    # --- System prompt (teacher) ---
     SYSTEM_PROMPT = f"""
 You are **Personalized Teacher** for {USER_NAME}. Be engaging, concise, and Socratic.
 Profile: {USER_CONTEXT}
@@ -95,25 +86,83 @@ Rules:
 - Make them think "I need to build this!"
 """
 
-    class TeacherAgent(Agent):
+    # --- VAD ---
+    vad = silero.VAD.load()
+
+    # --- Piper-backed Agent (OFFLINE TTS) ---
+    # We override tts_node() to synthesize with Piper and stream raw PCM into the room.
+    PIPER_MODEL = os.getenv("PIPER_MODEL_PATH", "en_US-amy-medium.onnx")
+    PIPER_SR = int(os.getenv("PIPER_SAMPLE_RATE", "22050"))  # match your .onnx.json
+    PIPER_CH = 1
+    BYTES_PER_SAMPLE = 2 * PIPER_CH  # int16 mono
+    CHUNK_SAMPLES = PIPER_SR // 20  # ~50ms chunks
+
+    class PiperTTSAgent(Agent):
+        async def tts_node(
+            self, text: AsyncIterable[str], model_settings: ModelSettings
+        ) -> AsyncIterable[rtc.AudioFrame]:
+            async for segment in text:
+                if not segment or not segment.strip():
+                    continue
+
+                proc = await asyncio.create_subprocess_exec(
+                    "piper",
+                    "-m",
+                    PIPER_MODEL,
+                    "--output-raw",
+                    stdin=asyncio.subprocess.PIPE,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.DEVNULL,
+                )
+                proc.stdin.write(segment.encode("utf-8"))
+                await proc.stdin.drain()
+                proc.stdin.close()
+
+                read_size = CHUNK_SAMPLES * BYTES_PER_SAMPLE
+                while True:
+                    buf = await proc.stdout.read(read_size)
+                    if not buf:
+                        break
+                    samples_per_channel = len(buf) // BYTES_PER_SAMPLE
+                    yield rtc.AudioFrame(
+                        data=buf,
+                        sample_rate=PIPER_SR,
+                        num_channels=PIPER_CH,
+                        samples_per_channel=samples_per_channel,
+                    )
+                await proc.wait()
+
+    class TeacherAgent(PiperTTSAgent):
         def __init__(self) -> None:
             super().__init__(
                 instructions=SYSTEM_PROMPT,
-                allow_interruptions=True,  # Allow interruptions but with VAD tuning
-                min_consecutive_speech_delay=0.5,  # Reduced delay for quicker interruption response
+                allow_interruptions=True,
+                min_consecutive_speech_delay=0.5,
             )
 
-    # Configure VAD with higher sensitivity for better speech detection
-    vad = silero.VAD.load()
-    
+    # --- OpenAI-compatible async client with longer timeout + warmup ---
+    client = OpenAIClient(
+        base_url=_get_env("OPENAI_BASE_URL", "http://localhost:11434/v1"),
+        api_key=_get_env("OPENAI_API_KEY", "ollama"),     # any non-empty for local
+        timeout=float(_get_env("OPENAI_TIMEOUT", "60")),  # give the model time to load
+    )
+    # Warmup: do a 1-token call so the first real turn is instant
+    try:
+        await client.chat.completions.create(
+            model=_get_env("PT_LLM_MODEL", "qwen2.5:3b-instruct"),
+            messages=[{"role": "user", "content": "ok"}],
+            max_tokens=1,
+        )
+    except Exception as e:
+        logger.warning(f"LLM warmup failed (continuing): {e}")
+
+    # --- FREE stack session: Groq STT + Local LLM (Ollama/LM Studio) + Piper TTS ---
     session = AgentSession(
-        stt=openai.STT(model="whisper-1"),
-        llm=openai.LLM(model=_get_env("PT_LLM_MODEL", "gpt-4o-mini")),
-        tts=openai.TTS(voice=_get_env("PT_TTS_VOICE", "alloy")),
-        # tts=elevenlabs.TTS(
-        #     voice_id="ODq5zmih8GrVes37Dizd",
-        #     model="eleven_multilingual_v2"
-        # ),
+        stt=groq.STT(model="whisper-large-v3-turbo"),  # requires GROQ_API_KEY
+        llm=openai.LLM(
+            model=_get_env("PT_LLM_MODEL", "qwen2.5:3b-instruct"),
+            client=client,  # ✅ pass the ASYNC client
+        ),
         vad=vad,
     )
 
@@ -123,7 +172,6 @@ Rules:
         avatar_participant_identity="personalized-teacher",
         avatar_participant_name="Personalized Teacher",
     )
-
     logger.info("Starting avatar session…")
     await avatar.start(session, room=ctx.room)
     logger.info("Avatar joined the room.")
@@ -131,8 +179,7 @@ Rules:
     # --- Start agent ---
     await session.start(room=ctx.room, agent=TeacherAgent())
 
-    # --- First turn: produce the bespoke greeting + 1 bullet ---
-    # Greet with a single, impactful insight tailored to their CDTM Hackathon interests
+    # --- First greeting ---
     GREETING_TEMPLATE = f"""Construct the **very first** message as follows.
 
 Begin with exactly:
@@ -157,9 +204,7 @@ Rules:
 - Be specific (name tools, techniques, or examples)
 - Keep it concise and relevant to hackathon prototyping
 """
-
     await session.generate_reply(instructions=GREETING_TEMPLATE)
-
     logger.info("Personalized Teacher initialized and greeted successfully.")
 
 
