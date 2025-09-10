@@ -106,23 +106,32 @@ The viewer plays the avatar stream in real time.
 ## 🛠 Troubleshooting
 
 ❌ No video/audio → Ensure the Python agent is running and connected to LiveKit.
+
 🔑 Token errors → Check LIVEKIT_API_KEY/LIVEKIT_API_SECRET in both .env.local and python-agent/.env.
+
 🚫 401/403 from LiveKit → Verify LIVEKIT_URL and that the project credentials match.
+
 🤖 OpenAI errors → Confirm OPENAI_API_KEY is set in python-agent/.env.
+
 🔇 Autoplay blocked → Click anywhere in the page to enable audio playback.
+
 🧪 Windows/WSL path issues → Prefer running the repo under your Linux home (e.g., ~/project) instead of /mnt/c/....
 
 ## 🧳 Scripts
 **Web**
 
   pnpm dev — run dev server
+  
   pnpm build — build for production
+  
   pnpm start — start production server
+  
   pnpm test — run tests
 
 **Python**
 
   python-agent/run-uv.sh — run agent with uv
+  
   python-agent/run.sh — run agent with venv + pip
 
 
