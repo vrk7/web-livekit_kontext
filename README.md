@@ -28,6 +28,12 @@ You’ll need:
 
 ---
 
+## Step 0 
+
+```bash
+git clone https://github.com/vrk7/web-livekit_kontext.git
+```
+
 ## 📦 Step 1 — Install dependencies
 From the project root:
 
