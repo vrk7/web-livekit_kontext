@@ -139,6 +139,8 @@ The viewer plays the avatar stream in real time.
 
 
 ## Structure of the codebase
+
+```bash
 .
 ├─ python-agent/
 │  ├─ run-uv.sh
@@ -149,7 +151,7 @@ The viewer plays the avatar stream in real time.
 ├─ .env.local               # Web env (private+public)
 ├─ package.json
 └─ README.md
-
+```
 
 ## 📝 Note
 Make sure environment files are **ignored**:
