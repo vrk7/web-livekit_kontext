@@ -36,7 +36,7 @@ From the project root:
 pnpm install   # or: npm install
 ```
 
-## 2) Configure environment
+## 🔑 Step 2 — Configure environment variables (secure)
 
 Create `.env.local` in project root for the Next.js app:
 
@@ -73,7 +73,7 @@ Notes:
 - The web app auto-generates viewer JWTs using `LIVEKIT_API_KEY` and `LIVEKIT_API_SECRET`. You do not need to provide a static `NEXT_PUBLIC_DEMO_LIVEKIT_TOKEN`.
 - Use the same LiveKit URL/key/secret in both apps.
 
-## 3) Run the Python agent
+## ▶️ Step 3 — Start the Python agent
 
 Terminal 1:
 
@@ -86,7 +86,7 @@ cd python-agent
 
 When running in dev mode, the agent connects to LiveKit using the env values and joins rooms created by the web app.
 
-## 4) Run the Next.js app
+## 🌐 Step 4 — Start the Next.js app
 
 Terminal 2:
 
@@ -96,18 +96,34 @@ pnpm dev  # or: npm run dev
 
 Open `http://localhost:3000` and you should see the avatar stream. The app will show a configuration warning page until required env vars are set.
 
-## Troubleshooting
+## 🧭 How it works (flow)
 
-- No video/audio: Ensure the Python agent is running and logged into your LiveKit project.
-- Token generation failed: Verify `LIVEKIT_API_KEY` and `LIVEKIT_API_SECRET` in `.env.local`.
-- 401/403 from LiveKit: Check URL and credentials in both `.env.local` and `python-agent/.env`.
-- OpenAI errors: Confirm `OPENAI_API_KEY` in `python-agent/.env`.
-- Autoplay blocked: Click anywhere in the page to allow audio playback.
+Python Agent ➜ LiveKit Cloud ➜ Next.js Viewer
+The Python agent connects to LiveKit and publishes audio/video for the chosen avatar.
+The Next.js app requests a server-generated JWT and joins the LiveKit room.
+The viewer plays the avatar stream in real time.
 
-## Scripts
+## 🛠 Troubleshooting
 
-- Web: `pnpm dev`, `pnpm build`, `pnpm start`, `pnpm test`
-- Python: `python-agent/run-uv.sh` or `python-agent/run.sh`
+❌ No video/audio → Ensure the Python agent is running and connected to LiveKit.
+🔑 Token errors → Check LIVEKIT_API_KEY/LIVEKIT_API_SECRET in both .env.local and python-agent/.env.
+🚫 401/403 from LiveKit → Verify LIVEKIT_URL and that the project credentials match.
+🤖 OpenAI errors → Confirm OPENAI_API_KEY is set in python-agent/.env.
+🔇 Autoplay blocked → Click anywhere in the page to enable audio playback.
+🧪 Windows/WSL path issues → Prefer running the repo under your Linux home (e.g., ~/project) instead of /mnt/c/....
+
+## 🧳 Scripts
+**Web**
+
+  pnpm dev — run dev server
+  pnpm build — build for production
+  pnpm start — start production server
+  pnpm test — run tests
+
+**Python**
+
+  python-agent/run-uv.sh — run agent with uv
+  python-agent/run.sh — run agent with venv + pip
 
 
 =======
