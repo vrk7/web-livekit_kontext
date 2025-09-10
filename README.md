@@ -31,7 +31,6 @@ You’ll need:
 ## 📦 Step 1 — Install dependencies
 
 ```bash
-uv pip install "openai>=1.40.0"
 
 curl -fsSL https://ollama.com/install.sh | sh
 sudo systemctl enable --now ollama
