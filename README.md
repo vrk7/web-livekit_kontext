@@ -98,9 +98,12 @@ Open `http://localhost:3000` and you should see the avatar stream. The app will 
 
 ## 🧭 How it works (flow)
 
-Python Agent ➜ LiveKit Cloud ➜ Next.js Viewer
+Python Agent  ➜  LiveKit Cloud  ➜  Next.js Viewer
+
 The Python agent connects to LiveKit and publishes audio/video for the chosen avatar.
+
 The Next.js app requests a server-generated JWT and joins the LiveKit room.
+
 The viewer plays the avatar stream in real time.
 
 ## 🛠 Troubleshooting
@@ -135,7 +138,6 @@ The viewer plays the avatar stream in real time.
   python-agent/run.sh — run agent with venv + pip
 
 
-=======
 ## Structure of the codebase
 .
 ├─ python-agent/
@@ -148,6 +150,16 @@ The viewer plays the avatar stream in real time.
 ├─ package.json
 └─ README.md
 
-## Note
+
+## 📝 Note
+Make sure environment files are **ignored**:
+
+'''bash
+.env
+*.env
+**/*.env
+.env.local
+python-agent/.env
+'''
 
 Add env files to .gitignore:
