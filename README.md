@@ -32,6 +32,7 @@ You’ll need:
 
 ```bash
 git clone https://github.com/vrk7/web-livekit_kontext.git
+cd web-livekit_kontext/
 ```
 
 ## 📦 Step 1 — Install dependencies
