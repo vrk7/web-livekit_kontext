@@ -29,6 +29,20 @@ You’ll need:
 ---
 
 ## 📦 Step 1 — Install dependencies
+
+```bash
+uv pip install "openai>=1.40.0"
+
+curl -fsSL https://ollama.com/install.sh | sh
+sudo systemctl enable --now ollama
+which ollama
+ollama --version
+
+ollama serve #do it from a different terminal
+ollama pull qwen2.5:3b-instruct
+curl -s http://localhost:11434/v1/models | head
+```
+
 From the project root:
 
 ```bash
