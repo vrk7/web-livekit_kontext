@@ -154,12 +154,12 @@ The viewer plays the avatar stream in real time.
 ## 📝 Note
 Make sure environment files are **ignored**:
 
-'''bash
+```bash
 .env
 *.env
 **/*.env
 .env.local
 python-agent/.env
-'''
+```
 
 Add env files to .gitignore:
