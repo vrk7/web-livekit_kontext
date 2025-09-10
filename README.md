@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Web LiveKit + BeyondPresence Avatar
 
 Run a Next.js viewer that streams a BeyondPresence avatar published by a Python LiveKit agent.
@@ -94,4 +93,3 @@ Open `http://localhost:3000` and you should see the avatar stream. The app will 
 
 =======
 # web-livekit_kontext
->>>>>>> origin/main
