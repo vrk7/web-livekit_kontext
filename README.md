@@ -34,6 +34,7 @@ You’ll need:
 git clone https://github.com/vrk7/web-livekit_kontext.git
 cd web-livekit_kontext/
 ```
+Then work on the needed banch based on your preference.
 
 ## 📦 Step 1 — Install dependencies
 From the project root:
