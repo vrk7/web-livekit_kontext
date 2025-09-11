@@ -74,7 +74,7 @@ LIVEKIT_API_SECRET=your_livekit_api_secret
 
 # LLM -> local OpenAI-compatible
 # A) Ollama:
-OPENAI_BASE_URL=http://localhost:11435/v1
+OPENAI_BASE_URL=http://localhost:11434/v1
 OPENAI_API_KEY=ollama
 OPENAI_TIMEOUT=60
 PT_LLM_MODEL=qwen2.5:3b-instruct
