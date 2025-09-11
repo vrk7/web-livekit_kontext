@@ -29,6 +29,7 @@ You’ll need:
 ---
 
 ## 📦 Step 1 — Install dependencies
+Clone the Git and chnage the branch to this.
 
 ```bash
 
