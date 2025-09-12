@@ -64,12 +64,13 @@ export interface UseBeyondPresenceReturn {
   // Track management
   videoTracks: RemoteVideoTrack[];
   audioTracks: RemoteAudioTrack[];
-  
+
   // Control methods
   connect: () => Promise<void>;
   disconnect: () => Promise<void>;
   startAudio: () => Promise<void>;
-  
+  startMicrophone: () => Promise<void>;
+
   // Audio state
   canPlayAudio: boolean;
   audioPlaybackBlocked: boolean;
