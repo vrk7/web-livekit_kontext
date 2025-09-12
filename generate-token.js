@@ -25,6 +25,7 @@ async function generateToken() {
     roomJoin: true,
     canSubscribe: true,
     canPublish: true,
+    canPublishAudio: true,
     canPublishData: true,
   });
 
