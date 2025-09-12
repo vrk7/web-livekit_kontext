@@ -58,7 +58,7 @@ async function generateLiveKitTokenForViewer(avatarId: string): Promise<string |
     room: roomName,
     roomJoin: true,
     canSubscribe: true, // Viewer needs to subscribe to avatar's tracks
-    canPublish: false, // Viewer doesn't need to publish
+    canPublish: true, // Allow viewer to publish audio if needed
     canPublishData: true,
   });
 

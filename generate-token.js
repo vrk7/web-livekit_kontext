@@ -24,7 +24,7 @@ async function generateToken() {
     room: roomName,
     roomJoin: true,
     canSubscribe: true,
-    canPublish: false,
+    canPublish: true,
     canPublishData: true,
   });
 
@@ -41,7 +41,7 @@ async function generateToken() {
   console.log(`- Room: ${roomName}`);
   console.log(`- Identity: ${participantName}`);
   console.log('- Valid for: 24 hours');
-  console.log('- Permissions: Subscribe only (no publish)');
+  console.log('- Permissions: Subscribe and publish audio');
 }
 
 generateToken().catch(console.error);

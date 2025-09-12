@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
       room: room,
       roomJoin: true,
       canSubscribe: true,
-      canPublish: false, // Set to true if you need to publish
+      canPublish: true, // Allow participants to publish audio
       canPublishData: true,
     });
 
