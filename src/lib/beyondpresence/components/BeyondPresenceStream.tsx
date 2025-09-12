@@ -36,6 +36,7 @@ export function BeyondPresenceStream({
     connect,
     disconnect,
     startAudio,
+    startMicrophone,
     canPlayAudio,
     audioPlaybackBlocked
   } = useBeyondPresence(config);
@@ -195,16 +196,38 @@ export function BeyondPresenceStream({
           </div>
         )}
 
-        {/* Disconnect Controls */}
+        {/* Microphone & Disconnect Controls */}
         {isConnected && (
-          <div 
+          <div
             className="disconnect-controls"
             style={{
               display: 'flex',
               justifyContent: 'center',
+              gap: '12px',
               padding: '12px'
             }}
           >
+            <button
+              onClick={startMicrophone}
+              style={{
+                padding: '8px 16px',
+                backgroundColor: '#10b981',
+                color: 'white',
+                border: 'none',
+                borderRadius: '6px',
+                fontSize: '14px',
+                cursor: 'pointer',
+                fontWeight: '500'
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.backgroundColor = '#059669';
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.backgroundColor = '#10b981';
+              }}
+            >
+              Enable Microphone
+            </button>
             <button
               onClick={handleDisconnect}
               style={{

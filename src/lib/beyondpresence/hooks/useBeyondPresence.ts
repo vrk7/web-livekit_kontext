@@ -292,6 +292,25 @@ export function useBeyondPresence(config: UseBeyondPresenceConfig): UseBeyondPre
     }
   }, [config.onError, logger]);
 
+  // Start microphone function
+  const startMicrophone = useCallback(async () => {
+    if (!liveKitService.current) {
+      const error = new Error('LiveKit service not initialized');
+      setError(error);
+      config.onError?.(error);
+      return;
+    }
+
+    try {
+      await liveKitService.current.enableMicrophone();
+      logger.info('Microphone started');
+    } catch (err) {
+      logger.error('Failed to start microphone', err as Error);
+      setError(err as Error);
+      config.onError?.(err as Error);
+    }
+  }, [config.onError, logger]);
+
   // Auto-connect effect
   useEffect(() => {
     if (config.autoConnect && !isConnecting && !isConnected && !error) {
@@ -326,7 +345,8 @@ export function useBeyondPresence(config: UseBeyondPresenceConfig): UseBeyondPre
     connect,
     disconnect,
     startAudio,
-    
+    startMicrophone,
+
     // Audio state
     canPlayAudio,
     audioPlaybackBlocked

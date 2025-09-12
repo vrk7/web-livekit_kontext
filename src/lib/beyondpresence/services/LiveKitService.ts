@@ -1,9 +1,12 @@
-import { 
-  Room, 
-  RoomEvent, 
+import {
+  Room,
+  RoomEvent,
   ConnectionState,
   RoomOptions,
-  VideoPresets
+  VideoPresets,
+  createLocalAudioTrack,
+  LocalAudioTrack,
+  AudioCaptureOptions
 } from 'livekit-client';
 import type { LiveKitConfig } from '../types';
 import { handleLiveKitError } from '../utils/errorHandling';
@@ -19,6 +22,7 @@ export class LiveKitService {
   private reconnectAttempts = 0;
   private maxReconnectAttempts = 5;
   private reconnectTimeouts: number[] = [2000, 4000, 8000, 16000, 30000]; // Exponential backoff
+  private localAudioTrack: LocalAudioTrack | null = null;
 
   constructor() {
     this.logger.info('LiveKit service initialized');
@@ -105,12 +109,15 @@ export class LiveKitService {
     this.logger.info('Disconnecting from LiveKit room');
 
     try {
+      // Clean up any local tracks
+      await this.disableMicrophone();
+
       // Remove event listeners before disconnecting
       this.removeEventListeners();
-      
+
       // Disconnect from the room
       await this.room.disconnect();
-      
+
       this.room = null;
       this.reconnectAttempts = 0;
 
@@ -121,6 +128,50 @@ export class LiveKitService {
       // Still set room to null even if disconnect failed
       this.room = null;
       throw handleLiveKitError(error, 'disconnect failed');
+    }
+  }
+
+  /**
+   * Publishes a microphone track to the room
+   */
+  async enableMicrophone(options?: AudioCaptureOptions): Promise<LocalAudioTrack> {
+    if (!this.room) {
+      throw handleLiveKitError(new Error('No room connected'), 'enable microphone failed');
+    }
+
+    try {
+      if (!this.localAudioTrack) {
+        this.localAudioTrack = await createLocalAudioTrack(options);
+        await this.room.localParticipant.publishTrack(this.localAudioTrack);
+        this.logger.info('Microphone track published', { sid: this.localAudioTrack.sid });
+      }
+
+      return this.localAudioTrack;
+    } catch (error) {
+      this.logger.error('Failed to publish microphone track', error as Error);
+      throw handleLiveKitError(error, 'enable microphone failed');
+    }
+  }
+
+  /**
+   * Unpublishes the microphone track from the room
+   */
+  async disableMicrophone(): Promise<void> {
+    if (!this.room || !this.localAudioTrack) {
+      this.localAudioTrack?.stop();
+      this.localAudioTrack = null;
+      return;
+    }
+
+    try {
+      await this.room.localParticipant.unpublishTrack(this.localAudioTrack, true);
+      this.localAudioTrack.stop();
+      this.logger.info('Microphone track unpublished');
+    } catch (error) {
+      this.logger.error('Failed to unpublish microphone track', error as Error);
+      throw handleLiveKitError(error, 'disable microphone failed');
+    } finally {
+      this.localAudioTrack = null;
     }
   }
 
