@@ -32,7 +32,8 @@ export async function GET(request: NextRequest) {
       room: room,
       roomJoin: true,
       canSubscribe: true,
-      canPublish: false, // Set to true if you need to publish
+      canPublish: true, // Allow participants to publish audio
+      canPublishAudio: true, // Explicitly allow audio publishing
       canPublishData: true,
     });
 
@@ -49,7 +50,7 @@ export async function GET(request: NextRequest) {
     console.error('Failed to generate LiveKit token:', error);
     
     return NextResponse.json(
-      { 
+      {
         error: error.message || 'Failed to generate token',
         details: error.toString()
       },

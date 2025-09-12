@@ -58,7 +58,8 @@ async function generateLiveKitTokenForViewer(avatarId: string): Promise<string |
     room: roomName,
     roomJoin: true,
     canSubscribe: true, // Viewer needs to subscribe to avatar's tracks
-    canPublish: false, // Viewer doesn't need to publish
+    canPublish: true, // Allow viewer to publish audio if needed
+    canPublishAudio: true, // Explicitly allow publishing audio
     canPublishData: true,
   });
 
@@ -286,7 +287,7 @@ export async function POST(request: NextRequest) {
     }
     
     return NextResponse.json(
-      { 
+      {
         error: error.message || 'Failed to create session',
         details: error.toString(),
         status: error.status,
